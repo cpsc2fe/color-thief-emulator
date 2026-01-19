@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ng new:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm start)",
+      "Bash(npm run deploy:*)",
+      "Bash(ssh -T:*)",
+      "Bash(git remote set-url:*)"
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+<div class="container">
+  <h1>Color Thief Emulator</h1>
+  <p class="subtitle">Upload an image to extract its color palette</p>
+
+  <div class="upload-section">
+    <label class="file-input-label">
+      <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+      <span>Choose Image</span>
+    </label>
+  </div>
+
+  <div class="settings">
+    <div class="setting-item">
+      <label for="colorCount">Color Count (2-20):</label>
+      <input
+        type="number"
+        id="colorCount"
+        [(ngModel)]="colorCount"
+        min="2"
+        max="20"
+        [class.invalid]="!isColorCountValid"
+      />
+      @if (!isColorCountValid) {
+        <span class="error-msg">Must be 2-20</span>
+      }
+    </div>
+    <div class="setting-item">
+      <label for="quality">Quality (lower = better):</label>
+      <input
+        type="number"
+        id="quality"
+        [(ngModel)]="quality"
+        min="1"
+        [class.invalid]="!isQualityValid"
+      />
+      @if (!isQualityValid) {
+        <span class="error-msg">Must be >= 1</span>
+      }
+    </div>
+  </div>
+
+  @if (imageUrl) {
+    <div class="preview-section">
+      <div class="image-container">
+        <img
+          #imagePreview
+          [src]="imageUrl"
+          alt="Preview"
+          (load)="extractColors()"
+        />
+      </div>
+
+      <button class="extract-btn" (click)="extractColors()" [disabled]="isLoading || !isParamsValid">
+        {{ isLoading ? 'Extracting...' : 'Re-extract Colors' }}
+      </button>
+      @if (!isParamsValid) {
+        <p class="error-hint">Please fix the invalid parameters above</p>
+      }
+    </div>
+  }
+
+  @if (palette.length > 0) {
+    <div class="palette-section">
+      <h2>Extracted Palette</h2>
+      <div class="palette-grid">
+        @for (color of palette; track $index) {
+          <div class="color-card">
+            <div
+              class="color-swatch"
+              [style.background-color]="rgbToString(color)"
+            ></div>
+            <div class="color-info">
+              <div class="color-value" (click)="copyToClipboard(rgbToHex(color[0], color[1], color[2]))">
+                {{ rgbToHex(color[0], color[1], color[2]) }}
+              </div>
+              <div class="color-value" (click)="copyToClipboard(rgbToString(color))">
+                {{ rgbToString(color) }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
