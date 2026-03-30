@@ -18,6 +18,7 @@ export interface HSBColor {
 export interface PaletteSwatch {
   rgb: RGBColor;
   hsb: HSBColor;
+  hexText: string;
   rgbText: string;
   hsbText: string;
   ratio?: number;

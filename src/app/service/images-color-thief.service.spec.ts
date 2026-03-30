@@ -14,6 +14,7 @@ describe('ImagesColorThief palette models', () => {
     const original: PaletteSwatch = {
       rgb: { r: 12, g: 34, b: 56 },
       hsb: { h: 210, s: 79, b: 22 },
+      hexText: '#0C2238',
       rgbText: 'rgb(12, 34, 56)',
       hsbText: 'hsb(210, 79, 22)',
       ratio: 0.42,
@@ -25,17 +26,20 @@ describe('ImagesColorThief palette models', () => {
       card: {
         rgb: { r: 17, g: 26, b: 56 },
         hsb: { h: 226, s: 70, b: 22 },
+        hexText: '#111A38',
         rgbText: 'rgb(17, 26, 56)',
         hsbText: 'hsb(226, 70, 22)',
       },
       body: {
         rgb: { r: 10, g: 16, b: 34 },
         hsb: { h: 226, s: 70, b: 13 },
+        hexText: '#0A1022',
         rgbText: 'rgb(10, 16, 34)',
         hsbText: 'hsb(226, 70, 13)',
       },
     };
 
+    expect(entry.original.hexText).toBe('#0C2238');
     expect(entry.original.hsbText).toBe('hsb(210, 79, 22)');
     expect(entry.card.rgbText).toBe('rgb(17, 26, 56)');
     expect(entry.body.hsb.b).toBe(13);
@@ -53,13 +57,16 @@ describe('ImagesColorThief palette models', () => {
   it('builds original, card, and body swatches with lowercase display strings', () => {
     const entry = service['buildPaletteEntry']({ r: 12, g: 34, b: 56 }, 0.42);
 
+    expect(entry.original.hexText).toBe('#0C2238');
     expect(entry.original.hsb).toEqual({ h: 210, s: 79, b: 22 });
     expect(entry.original.rgbText).toBe('rgb(12, 34, 56)');
     expect(entry.original.hsbText).toBe('hsb(210, 79, 22)');
     expect(entry.original.ratioText).toBe('42%');
+    expect(entry.card.hexText).toBe('#112438');
     expect(entry.card.hsb).toEqual({ h: 210, s: 70, b: 22 });
     expect(entry.card.rgbText).toBe('rgb(17, 36, 56)');
     expect(entry.card.hsbText).toBe('hsb(210, 70, 22)');
+    expect(entry.body.hexText).toBe('#0A1621');
     expect(entry.body.hsb).toEqual({ h: 210, s: 70, b: 13 });
     expect(entry.body.rgbText).toBe('rgb(10, 22, 33)');
     expect(entry.body.hsbText).toBe('hsb(210, 70, 13)');
@@ -108,6 +115,7 @@ function createPaletteEntryStub(red: number, ratio: number): PaletteEntry {
     original: {
       rgb: { r: red, g: 0, b: 0 },
       hsb: { h: red, s: 50, b: 50 },
+      hexText: `#${red.toString(16).padStart(2, '0').toUpperCase()}0000`,
       rgbText: `rgb(${red}, 0, 0)`,
       hsbText: `hsb(${red}, 50, 50)`,
       ratio,
@@ -116,12 +124,14 @@ function createPaletteEntryStub(red: number, ratio: number): PaletteEntry {
     card: {
       rgb: { r: red, g: 1, b: 1 },
       hsb: { h: red, s: 70, b: 22 },
+      hexText: `#${red.toString(16).padStart(2, '0').toUpperCase()}0101`,
       rgbText: `rgb(${red}, 1, 1)`,
       hsbText: `hsb(${red}, 70, 22)`,
     },
     body: {
       rgb: { r: red, g: 2, b: 2 },
       hsb: { h: red, s: 70, b: 13 },
+      hexText: `#${red.toString(16).padStart(2, '0').toUpperCase()}0202`,
       rgbText: `rgb(${red}, 2, 2)`,
       hsbText: `hsb(${red}, 70, 13)`,
     },

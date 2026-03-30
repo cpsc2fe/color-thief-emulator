@@ -162,6 +162,12 @@ export class ImagesColorThiefService {
     return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
   }
 
+  private formatHexText(rgb: RGBColor): string {
+    return `#${[rgb.r, rgb.g, rgb.b]
+      .map((value) => value.toString(16).padStart(2, '0').toUpperCase())
+      .join('')}`;
+  }
+
   private formatHsbText(hsb: HSBColor): string {
     return `hsb(${hsb.h}, ${hsb.s}, ${hsb.b})`;
   }
@@ -175,6 +181,7 @@ export class ImagesColorThiefService {
     const swatch: PaletteSwatch = {
       rgb,
       hsb,
+      hexText: this.formatHexText(rgb),
       rgbText: this.formatRgbText(rgb),
       hsbText: this.formatHsbText(hsb),
     };

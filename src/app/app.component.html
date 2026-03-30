@@ -83,8 +83,8 @@
                   <span class="palette-card__role">original</span>
                   <span class="palette-card__ratio">ratio {{ entry.original.ratioText }}</span>
                 </div>
-                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.original.rgbText)">
-                  {{ entry.original.rgbText }}
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.original.hexText)">
+                  {{ entry.original.hexText }}
                 </button>
                 <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.original.hsbText)">
                   {{ entry.original.hsbText }}
@@ -99,8 +99,8 @@
               ></div>
               <div class="palette-card__meta">
                 <span class="palette-card__role">card</span>
-                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.card.rgbText)">
-                  {{ entry.card.rgbText }}
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.card.hexText)">
+                  {{ entry.card.hexText }}
                 </button>
                 <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.card.hsbText)">
                   {{ entry.card.hsbText }}
@@ -115,8 +115,8 @@
               ></div>
               <div class="palette-card__meta">
                 <span class="palette-card__role">body</span>
-                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.body.rgbText)">
-                  {{ entry.body.rgbText }}
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.body.hexText)">
+                  {{ entry.body.hexText }}
                 </button>
                 <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.body.hsbText)">
                   {{ entry.body.hsbText }}

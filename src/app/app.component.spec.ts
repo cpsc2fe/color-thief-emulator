@@ -18,11 +18,13 @@ describe('AppComponent', () => {
 
     expect(text).toContain('original');
     expect(text).toContain('ratio 42%');
-    expect(text).toContain('rgb(12, 34, 56)');
+    expect(text).toContain('#0C2238');
     expect(text).toContain('hsb(210, 79, 22)');
     expect(text).toContain('card');
+    expect(text).toContain('#112438');
     expect(text).toContain('hsb(210, 70, 22)');
     expect(text).toContain('body');
+    expect(text).toContain('#0A1621');
     expect(text).toContain('hsb(210, 70, 13)');
   });
 });
@@ -32,6 +34,7 @@ function createPaletteEntry(): PaletteEntry {
     original: {
       rgb: { r: 12, g: 34, b: 56 },
       hsb: { h: 210, s: 79, b: 22 },
+      hexText: '#0C2238',
       rgbText: 'rgb(12, 34, 56)',
       hsbText: 'hsb(210, 79, 22)',
       ratio: 0.42,
@@ -40,12 +43,14 @@ function createPaletteEntry(): PaletteEntry {
     card: {
       rgb: { r: 17, g: 36, b: 56 },
       hsb: { h: 210, s: 70, b: 22 },
+      hexText: '#112438',
       rgbText: 'rgb(17, 36, 56)',
       hsbText: 'hsb(210, 70, 22)',
     },
     body: {
       rgb: { r: 10, g: 22, b: 33 },
       hsb: { h: 210, s: 70, b: 13 },
+      hexText: '#0A1621',
       rgbText: 'rgb(10, 22, 33)',
       hsbText: 'hsb(210, 70, 13)',
     },
