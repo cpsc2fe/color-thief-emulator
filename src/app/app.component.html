@@ -37,6 +37,14 @@
         <span class="error-msg">Must be >= 1</span>
       }
     </div>
+    <div class="setting-item checkbox-item">
+      <input
+        type="checkbox"
+        id="exactCount"
+        [(ngModel)]="exactCount"
+      />
+      <label for="exactCount">Exact count</label>
+    </div>
   </div>
 
   @if (imageUrl) {
@@ -63,18 +71,56 @@
     <div class="palette-section">
       <h2>Extracted Palette</h2>
       <div class="palette-grid">
-        @for (color of palette; track $index) {
-          <div class="color-card">
-            <div
-              class="color-swatch"
-              [style.background-color]="rgbToString(color)"
-            ></div>
-            <div class="color-info">
-              <div class="color-value" (click)="copyToClipboard(rgbToHex(color[0], color[1], color[2]))">
-                {{ rgbToHex(color[0], color[1], color[2]) }}
+        @for (entry of palette; track $index) {
+          <div class="palette-card">
+            <div class="palette-card__row">
+              <div
+                class="palette-card__swatch"
+                [style.background-color]="entry.original.rgbText"
+              ></div>
+              <div class="palette-card__meta">
+                <div class="palette-card__label-row">
+                  <span class="palette-card__role">original</span>
+                  <span class="palette-card__ratio">ratio {{ entry.original.ratioText }}</span>
+                </div>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.original.rgbText)">
+                  {{ entry.original.rgbText }}
+                </button>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.original.hsbText)">
+                  {{ entry.original.hsbText }}
+                </button>
               </div>
-              <div class="color-value" (click)="copyToClipboard(rgbToString(color))">
-                {{ rgbToString(color) }}
+            </div>
+
+            <div class="palette-card__row">
+              <div
+                class="palette-card__swatch"
+                [style.background-color]="entry.card.rgbText"
+              ></div>
+              <div class="palette-card__meta">
+                <span class="palette-card__role">card</span>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.card.rgbText)">
+                  {{ entry.card.rgbText }}
+                </button>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.card.hsbText)">
+                  {{ entry.card.hsbText }}
+                </button>
+              </div>
+            </div>
+
+            <div class="palette-card__row">
+              <div
+                class="palette-card__swatch"
+                [style.background-color]="entry.body.rgbText"
+              ></div>
+              <div class="palette-card__meta">
+                <span class="palette-card__role">body</span>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.body.rgbText)">
+                  {{ entry.body.rgbText }}
+                </button>
+                <button class="palette-card__value" type="button" (click)="copyToClipboard(entry.body.hsbText)">
+                  {{ entry.body.hsbText }}
+                </button>
               </div>
             </div>
           </div>

@@ -1,7 +1,8 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImagesColorThiefService } from './service/images-color-thief.service';
+import type { PaletteEntry } from './service/images-color-thief.model';
 
 @Component({
   selector: 'app-root',
@@ -11,15 +12,15 @@ import { ImagesColorThiefService } from './service/images-color-thief.service';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  @ViewChild('imagePreview') imagePreview!: ElementRef<HTMLImageElement>;
+  protected readonly imagePreview = viewChild<ElementRef<HTMLImageElement>>('imagePreview');
+  private readonly colorThiefService = inject(ImagesColorThiefService);
 
   imageUrl: string | null = null;
-  palette: number[][] = [];
+  palette: PaletteEntry[] = [];
   colorCount = 5;
   quality = 10;
+  exactCount = true;
   isLoading = false;
-
-  constructor(private colorThiefService: ImagesColorThiefService) {}
 
   get isColorCountValid(): boolean {
     return !isNaN(this.colorCount) && this.colorCount >= 2 && this.colorCount <= 20;
@@ -49,31 +50,31 @@ export class AppComponent {
   }
 
   extractColors(): void {
-    if (!this.imagePreview?.nativeElement || !this.isParamsValid) return;
+    const imageElement = this.imagePreview()?.nativeElement;
+
+    if (!imageElement || !this.isParamsValid) {
+      return;
+    }
 
     this.isLoading = true;
 
     setTimeout(() => {
       try {
-        this.palette = this.colorThiefService.getPalette(
-          this.imagePreview.nativeElement,
+        let result = this.colorThiefService.getPaletteEntries(
+          imageElement,
           this.colorCount,
           this.quality
         );
+        if (this.exactCount) {
+          result = result.slice(0, this.colorCount);
+        }
+        this.palette = result;
       } catch (error) {
         console.error('Error extracting colors:', error);
       } finally {
         this.isLoading = false;
       }
     }, 100);
-  }
-
-  rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-  }
-
-  rgbToString(color: number[]): string {
-    return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
   }
 
   copyToClipboard(text: string): void {

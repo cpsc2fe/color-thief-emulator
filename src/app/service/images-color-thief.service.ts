@@ -1,8 +1,15 @@
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ColorThiefSetting, HSLColor } from './images-color-thief.model';
 import quantize from 'quantize';
 import { DOCUMENT } from '@angular/common';
+import type {
+  ColorThiefSetting,
+  HSBColor,
+  HSLColor,
+  PaletteEntry,
+  PaletteSwatch,
+  RGBColor,
+} from './images-color-thief.model';
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +86,216 @@ export class ImagesColorThiefService {
     }
 
     return newSetting;
+  }
+
+  private convertRgbToHsb(rgb: RGBColor): HSBColor {
+    const red = rgb.r / 255;
+    const green = rgb.g / 255;
+    const blue = rgb.b / 255;
+    const max = Math.max(red, green, blue);
+    const min = Math.min(red, green, blue);
+    const delta = max - min;
+    let hue = 0;
+
+    if (delta !== 0) {
+      if (max === red) {
+        hue = ((green - blue) / delta) % 6;
+      } else if (max === green) {
+        hue = (blue - red) / delta + 2;
+      } else {
+        hue = (red - green) / delta + 4;
+      }
+    }
+
+    hue = Math.round(hue * 60);
+
+    if (hue < 0) {
+      hue += 360;
+    }
+
+    return {
+      h: hue,
+      s: Math.round(max === 0 ? 0 : (delta / max) * 100),
+      b: Math.round(max * 100),
+    };
+  }
+
+  private convertHsbToRgb(hsb: HSBColor): RGBColor {
+    const saturation = hsb.s / 100;
+    const brightness = hsb.b / 100;
+    const chroma = brightness * saturation;
+    const hueSection = hsb.h / 60;
+    const secondary = chroma * (1 - Math.abs((hueSection % 2) - 1));
+    const match = brightness - chroma;
+    let red = 0;
+    let green = 0;
+    let blue = 0;
+
+    if (hueSection >= 0 && hueSection < 1) {
+      red = chroma;
+      green = secondary;
+    } else if (hueSection < 2) {
+      red = secondary;
+      green = chroma;
+    } else if (hueSection < 3) {
+      green = chroma;
+      blue = secondary;
+    } else if (hueSection < 4) {
+      green = secondary;
+      blue = chroma;
+    } else if (hueSection < 5) {
+      red = secondary;
+      blue = chroma;
+    } else {
+      red = chroma;
+      blue = secondary;
+    }
+
+    return {
+      r: Math.round((red + match) * 255),
+      g: Math.round((green + match) * 255),
+      b: Math.round((blue + match) * 255),
+    };
+  }
+
+  private formatRgbText(rgb: RGBColor): string {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+  }
+
+  private formatHsbText(hsb: HSBColor): string {
+    return `hsb(${hsb.h}, ${hsb.s}, ${hsb.b})`;
+  }
+
+  private formatRatioText(ratio: number): string {
+    return `${Math.round(ratio * 100)}%`;
+  }
+
+  private buildPaletteSwatch(rgb: RGBColor, ratio?: number, hsbOverride?: HSBColor): PaletteSwatch {
+    const hsb = hsbOverride ?? this.convertRgbToHsb(rgb);
+    const swatch: PaletteSwatch = {
+      rgb,
+      hsb,
+      rgbText: this.formatRgbText(rgb),
+      hsbText: this.formatHsbText(hsb),
+    };
+
+    if (typeof ratio === 'number') {
+      swatch.ratio = ratio;
+      swatch.ratioText = this.formatRatioText(ratio);
+    }
+
+    return swatch;
+  }
+
+  private buildPaletteEntry(rgb: RGBColor, ratio: number): PaletteEntry {
+    const original = this.buildPaletteSwatch(rgb, ratio);
+    const cardHsb: HSBColor = {
+      h: original.hsb.h,
+      s: 70,
+      b: 22,
+    };
+    const bodyHsb: HSBColor = {
+      h: cardHsb.h,
+      s: cardHsb.s,
+      b: Math.round(cardHsb.b * 0.6),
+    };
+
+    return {
+      original,
+      card: this.buildPaletteSwatch(this.convertHsbToRgb(cardHsb), undefined, cardHsb),
+      body: this.buildPaletteSwatch(this.convertHsbToRgb(bodyHsb), undefined, bodyHsb),
+    };
+  }
+
+  private createColorKey(rgb: RGBColor): string {
+    return `${rgb.r},${rgb.g},${rgb.b}`;
+  }
+
+  private findNearestPaletteColor(pixel: number[], palette: RGBColor[]): RGBColor | undefined {
+    let nearestColor: RGBColor | undefined;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    for (const color of palette) {
+      const distance =
+        ((pixel[0] ?? 0) - color.r) ** 2 +
+        ((pixel[1] ?? 0) - color.g) ** 2 +
+        ((pixel[2] ?? 0) - color.b) ** 2;
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestColor = color;
+      }
+    }
+
+    return nearestColor;
+  }
+
+  private countPaletteRatios(palette: RGBColor[], pixels: number[][]): Map<string, number> {
+    const pixelCounts = new Map<string, number>();
+
+    for (const color of palette) {
+      pixelCounts.set(this.createColorKey(color), 0);
+    }
+
+    for (const pixel of pixels) {
+      const nearestColor = this.findNearestPaletteColor(pixel, palette);
+
+      if (!nearestColor) {
+        continue;
+      }
+
+      const key = this.createColorKey(nearestColor);
+      pixelCounts.set(key, (pixelCounts.get(key) ?? 0) + 1);
+    }
+
+    const totalPixels = pixels.length;
+    const ratios = new Map<string, number>();
+
+    for (const color of palette) {
+      const key = this.createColorKey(color);
+      const count = pixelCounts.get(key) ?? 0;
+      ratios.set(key, totalPixels === 0 ? 0 : count / totalPixels);
+    }
+
+    return ratios;
+  }
+
+  private sortPaletteEntriesByRatio(entries: PaletteEntry[]): PaletteEntry[] {
+    return entries
+      .map((entry, index) => ({ entry, index }))
+      .sort((left, right) => {
+        const leftRatio = left.entry.original.ratio ?? 0;
+        const rightRatio = right.entry.original.ratio ?? 0;
+
+        if (rightRatio !== leftRatio) {
+          return rightRatio - leftRatio;
+        }
+
+        return left.index - right.index;
+      })
+      .map(({ entry }) => entry);
+  }
+
+  getPaletteEntries(img: HTMLImageElement, colorCount = 5, quality = 10): PaletteEntry[] {
+    const colorThiefSetting: ColorThiefSetting = {
+      colorCount,
+      quality,
+    };
+    const options = this.validateOptions(colorThiefSetting);
+
+    this.initCanvasImage(img);
+    const imgData = this.getCanvasImageData();
+    const pixelCount = this.width * this.height;
+    const pixelArray = this.createPixelArray(imgData, pixelCount, options.quality);
+    const cMap = quantize(pixelArray, options.colorCount);
+    const palette = cMap ? (cMap.palette() as number[][]) : [];
+    const paletteColors = palette.map(([r, g, b]) => ({ r, g, b }));
+    const ratios = this.countPaletteRatios(paletteColors, pixelArray);
+    const entries = paletteColors.map((color) =>
+      this.buildPaletteEntry(color, ratios.get(this.createColorKey(color)) ?? 0)
+    );
+
+    return this.sortPaletteEntriesByRatio(entries);
   }
 
   getPalette(img: HTMLImageElement, colorCount = 5, quality = 10): number[][] {
